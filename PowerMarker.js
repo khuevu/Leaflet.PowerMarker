@@ -9,8 +9,7 @@ L.Marker.PowerMarker = L.Marker.extend({
 
     initialize: function(latlng, options) {
         L.Marker.prototype.initialize.call(this, latlng, options);
-        //console.log("i")
-        this.state = L.Marker.PowerMarker.STATE_OFF; 
+        this.state = L.Marker.PowerMarker.STATE_OFF;
     },
 
     setCallback: function(callback) {
@@ -28,7 +27,11 @@ L.Marker.PowerMarker = L.Marker.extend({
         return this;
     },
 
-    start: function() {
+    start: function(callback) {
+        if (callback) {
+            this.setCallback(callback);
+        }
+
         this._startTime = this._lastFrameTime = Date.now();
         if (!L.Marker.PowerMarker.nextFrame) {
             L.Marker.PowerMarker.nextFrame = true;
@@ -47,7 +50,7 @@ L.Marker.PowerMarker = L.Marker.extend({
 
         while(cur) {
             if (cur.marker.state == M.STATE_ON) {
-                cur.marker._update.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp - cur.marker._startTime, timestamp);
+                cur.marker._update.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp);
                 cur.marker._lastFrameTime = timestamp; 
                 prev = cur;
             } else {
@@ -89,39 +92,36 @@ L.Marker.PowerMarker.movement = function(points, durations) {
         return [startLat, startLng]; 
     }
 
-    function PositionGenerator(points, durations) {
+    function positionInterpolator(points, durations) {
 
         var index = 0; 
-        var totalTime = 0;
-        var startPoint, endPoint, dur; 
+        var runTime = 0;
+        var startPoint, endPoint, dur = 0;
 
-        return function(elapsedTime, runTime, timestamp) {
-            //console.log(this.getLatLng()); 
-
-            while (runTime >= totalTime) {
-                if (index < durations.length) {
+        return function(elapsedTime, timestamp) {
+            runTime += elapsedTime;
+            while (runTime > dur) {
+                if (index < durations.length) { // change path segment
                     startPoint = (index > 0) ? points[index - 1] : (p = this.getLatLng(), [p.lat, p.lng]); 
                     endPoint = points[index];
+                    runTime -= dur;
                     dur = durations[index];
-                    totalTime += dur; 
-                    index++; 
+                    this.fire("begin", {destination: index});
+                    index++;
                 } else {
                     this.stop();
-                    this.setLatLng(points[points.length - 1]); 
+                    this.setLatLng(points[points.length - 1]);
+                    this.fire("complete");
                     return; 
                 }
             }
-            //console.log("index", index); 
-            console.log(this.options.name + " totalTime", totalTime, "runTime", runTime);
-            //console.log("startPoint", startPoint); 
-            //console.log("endPoint", endPoint); 
-            var nextPoint = interpolate(startPoint, endPoint, dur - (totalTime - runTime), dur); 
+            var nextPoint = interpolate(startPoint, endPoint, runTime, dur);
             this.setLatLng(nextPoint); 
             
         }
     }
 
-    return PositionGenerator(points, durations);
+    return positionInterpolator(points, durations);
 }
 
 
