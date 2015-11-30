@@ -1,7 +1,6 @@
 L.Marker.PowerMarker = L.Marker.extend({
     statics: {
-        id: 0,
-        listHead: null, 
+        listHead: null,
         listTail: null,
         nextFrame: false, 
         STATE_OFF: 0, 
@@ -12,35 +11,33 @@ L.Marker.PowerMarker = L.Marker.extend({
         L.Marker.prototype.initialize.call(this, latlng, options);
         //console.log("i")
         this.state = L.Marker.PowerMarker.STATE_OFF; 
-    }, 
+    },
 
-    on: function(updateCallback) {
-        this._update = updateCallback;
-        var M = L.Marker.PowerMarker; 
+    setCallback: function(callback) {
+        this._update = callback;
+        var M = L.Marker.PowerMarker;
         if (this.state != M.STATE_ON) {
             if (M.listTail) {
-                M.listTail.next = {marker: this, next: null}; 
-                M.listTail = M.listTail.next; 
+                M.listTail.next = {marker: this, next: null};
+                M.listTail = M.listTail.next;
             } else {
-                M.listHead = M.listTail = {marker: this, next: null}; 
+                M.listHead = M.listTail = {marker: this, next: null};
             }
-
-            this.state = M.STATE_ON; 
+            this.state = M.STATE_ON;
         }
-
-        this._onTime = this._lastFrameTime = Date.now(); 
-        this._run(); 
+        return this;
     },
 
-    off: function() {
-        this.state = L.Marker.PowerMarker.STATE_OFF; 
-    },
-
-    _run: function() {
+    start: function() {
+        this._startTime = this._lastFrameTime = Date.now();
         if (!L.Marker.PowerMarker.nextFrame) {
-            L.Marker.PowerMarker.nextFrame = true; 
-            L.Util.requestAnimFrame(this._animateAndClean, this, false);  
-        }      
+            L.Marker.PowerMarker.nextFrame = true;
+            L.Util.requestAnimFrame(this._animateAndClean, this, false);
+        }
+    },
+
+    stop: function() {
+        this.state = L.Marker.PowerMarker.STATE_OFF; 
     },
 
     _animateAndClean: function() {
@@ -49,12 +46,10 @@ L.Marker.PowerMarker = L.Marker.extend({
         var cur = M.listHead, prev; 
 
         while(cur) {
-            console.log(cur);
             if (cur.marker.state == M.STATE_ON) {
-                cur.marker._update.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp - cur.marker._onTime, timestamp); 
+                cur.marker._update.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp - cur.marker._startTime, timestamp);
                 cur.marker._lastFrameTime = timestamp; 
-                console.log("Animate marker", cur.marker.options.name);
-                prev = cur; 
+                prev = cur;
             } else {
                 if (prev) {
                     prev.next = cur.next; 
@@ -66,10 +61,8 @@ L.Marker.PowerMarker = L.Marker.extend({
                     M.listTail = prev; 
                 }
             }
-            console.log("cur next:", cur.next);
-            cur = cur.next; 
-            console.log("cur now:", cur);
-        }    
+            cur = cur.next;
+        }
 
         if (M.listHead) {
             L.Util.requestAnimFrame(this._animateAndClean, this, false); 
@@ -97,8 +90,6 @@ L.Marker.PowerMarker.movement = function(points, durations) {
     }
 
     function PositionGenerator(points, durations) {
-        console.log("points", points); 
-        console.log("durations", durations); 
 
         var index = 0; 
         var totalTime = 0;
@@ -115,13 +106,13 @@ L.Marker.PowerMarker.movement = function(points, durations) {
                     totalTime += dur; 
                     index++; 
                 } else {
-                    this.off(); 
+                    this.stop();
                     this.setLatLng(points[points.length - 1]); 
                     return; 
                 }
             }
             //console.log("index", index); 
-            console.log("totalTime", totalTime, "runTime", runTime); 
+            console.log(this.options.name + " totalTime", totalTime, "runTime", runTime);
             //console.log("startPoint", startPoint); 
             //console.log("endPoint", endPoint); 
             var nextPoint = interpolate(startPoint, endPoint, dur - (totalTime - runTime), dur); 

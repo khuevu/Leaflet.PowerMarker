@@ -44,11 +44,11 @@ L.polyline(parisKievLL).addTo(map);
 L.polyline(londonParisRomeBerlinBucarest, {color: 'red'}).addTo(map);
 map.fitBounds(londonParisRomeBerlinBucarest);
 
-var marker1 = L.Marker.powerMarker(parisKievLL[0], {name: 'marker1'}).addTo(map); 
-var marker2 = L.Marker.powerMarker(londonParisRomeBerlinBucarest[0], {name: 'marker2'}).addTo(map); 
+var marker1 = L.Marker.powerMarker(parisKievLL[0], {name: 'marker1'}).setCallback(L.Marker.PowerMarker.movement(parisKievLL.slice(1), [100000])).addTo(map);
+var marker2 = L.Marker.powerMarker(londonParisRomeBerlinBucarest[0], {name: 'marker2'}).setCallback(L.Marker.PowerMarker.movement(londonParisRomeBerlinBucarest.slice(1), [2000, 3000, 4000, 100000])).addTo(map);
 
-marker1.on(L.Marker.PowerMarker.movement(parisKievLL.slice(1), [100000]));
-marker2.on(L.Marker.PowerMarker.movement(londonParisRomeBerlinBucarest.slice(1), [2000, 3000, 4000, 5000])); 
+marker1.start();
+marker2.start();
 
     </script>
 </body>

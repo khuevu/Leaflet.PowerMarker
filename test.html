@@ -22,10 +22,10 @@
     <!--<script src="js/bouncemarker.js"></script>-->
     <script type="text/javascript">
         var t = Date.now(); 
-        function move(elapsedTime, runTime, timestamp) { console.log(timestamp); console.log(timestamp - t); if (timestamp - t > 30000) this.off(); }
+        function move(elapsedTime, runTime, timestamp) { console.log(timestamp); console.log(timestamp - t); if (timestamp - t > 30000) this.stop(); }
 
         var marker1 = new L.Marker.PowerMarker([45, 6]);
-        marker1.on(move); 
+        marker1.start(move);
     </script>
 </body>
 </html>
