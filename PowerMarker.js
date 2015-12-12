@@ -12,8 +12,11 @@ L.Marker.PowerMarker = L.Marker.extend({
         this.state = L.Marker.PowerMarker.STATE_OFF;
     },
 
-    setCallback: function(callback) {
-        this._update = callback;
+    addCallback: function(callback) {
+        if (!this._callbacks)
+            this._callbacks = []; 
+
+        this._callbacks.push(callback);
         var M = L.Marker.PowerMarker;
         if (this.state != M.STATE_ON) {
             if (M.listTail) {
@@ -29,7 +32,7 @@ L.Marker.PowerMarker = L.Marker.extend({
 
     start: function(callback) {
         if (callback) {
-            this.setCallback(callback);
+            this.addCallback(callback);
         }
 
         this._startTime = this._lastFrameTime = Date.now();
@@ -40,7 +43,8 @@ L.Marker.PowerMarker = L.Marker.extend({
     },
 
     stop: function() {
-        this.state = L.Marker.PowerMarker.STATE_OFF; 
+        this.state = L.Marker.PowerMarker.STATE_OFF;
+        this._callbacks = null;  
     },
 
     _animateAndClean: function() {
@@ -50,7 +54,10 @@ L.Marker.PowerMarker = L.Marker.extend({
 
         while(cur) {
             if (cur.marker.state == M.STATE_ON) {
-                cur.marker._update.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp);
+                for (var i = 0; i < cur.marker._callbacks.length; i++) {
+                    var c = cur.marker._callbacks[i]; 
+                    c.call(cur.marker, timestamp - cur.marker._lastFrameTime, timestamp);
+                }
                 cur.marker._lastFrameTime = timestamp; 
                 prev = cur;
             } else {
@@ -100,13 +107,15 @@ L.Marker.PowerMarker.movement = function(points, durations) {
 
         return function(elapsedTime, timestamp) {
             runTime += elapsedTime;
+            var newSeg = false;
+            
             while (runTime > dur) {
                 if (index < durations.length) { // change path segment
                     startPoint = (index > 0) ? points[index - 1] : (p = this.getLatLng(), [p.lat, p.lng]); 
                     endPoint = points[index];
                     runTime -= dur;
                     dur = durations[index];
-                    this.fire("begin", {destination: index});
+                    newSeg = true; 
                     index++;
                 } else {
                     this.stop();
@@ -114,6 +123,10 @@ L.Marker.PowerMarker.movement = function(points, durations) {
                     this.fire("complete");
                     return; 
                 }
+            }
+
+            if (newSeg) {
+                this.fire("begin", {destination: index - 1});
             }
             var nextPoint = interpolate(startPoint, endPoint, runTime, dur);
             this.setLatLng(nextPoint); 
