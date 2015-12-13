@@ -44,7 +44,6 @@ L.Marker.PowerMarker = L.Marker.extend({
 
     stop: function() {
         this.state = L.Marker.PowerMarker.STATE_OFF;
-        this._callbacks = null;  
     },
 
     _animateAndClean: function() {
@@ -61,6 +60,7 @@ L.Marker.PowerMarker = L.Marker.extend({
                 cur.marker._lastFrameTime = timestamp; 
                 prev = cur;
             } else {
+                cur._callbacks = null;  
                 if (prev) {
                     prev.next = cur.next; 
                 } else {
