@@ -1,0 +1,42 @@
+#map {
+    height: 100%;
+}
+
+
+.box {
+    background:rgba(0, 0, 0, 0.51);
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 6px;
+}
+
+.boxHeader {
+  font-size:1.9em;
+}
+
+.dateTimeBox {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    width: 300px;  
+}
+
+.timeBox {
+    color: #F3F3F0;
+    font-size: 24px;
+}
+
+.time {
+    position: relative;
+    top: -5px;
+}
+
+
+.date {
+    color: #F3F3F0;
+    font-size: 24px;
+}
+
+.stationMarker {
+    opacity: 0.5;
+}
