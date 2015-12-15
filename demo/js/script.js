@@ -36,7 +36,7 @@ function updateTimer() {
     timestamp = newTimeStamp;
     time = new Date(time.getTime() + elapsedMinute * 60000); // update the clock
 
-    $('.date').text("Date: " + time.getUTCDate() + " - " + addZ(time.getUTCMonth() + 1) + " - " + time.getUTCFullYear());
+    $('.date').text("Date: " + time.getUTCDate() + "-" + addZ(time.getUTCMonth() + 1) + "-" + time.getUTCFullYear());
     $('.time').text(time.getUTCHours() + ":" + addZ(time.getUTCMinutes()));
 
     while (markers.length > 0 && markers[markers.length - 1].startTime < time.toISOString()) {
