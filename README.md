@@ -11,7 +11,8 @@ type of animation for markers (e.g update icons, labels...)
 
 ## Demo
 
-TODO
+[Visualization of Bay Area Bike Sharing
+Trips with Leaflet.PowerMarker](http://khuevu.github.io/Leaflet.PowerMarker/)
 
 ## API
 
