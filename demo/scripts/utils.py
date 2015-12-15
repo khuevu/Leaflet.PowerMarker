@@ -3,13 +3,20 @@ import requests
 import datetime
 from polyline.codec import PolylineCodec
 
+def getAPIkeys():
+    keys = []
+    with open('keys.txt', 'r') as inputFile:
+        for l in inputFile.readlines():
+            keys.append(l.strip())
+    return keys
+
 key_state = 0
 def getPolylines(points, mode):
     baseUrl = "https://maps.googleapis.com/maps/api/directions/json"
     fullCall = baseUrl + "?origin=%s&destination=%s&waypoints=%s&key=%s&mode=%s"
     origin = str(points[0][0]) + ',' + str(points[0][1])
     destination = str(points[-1][0]) + ',' + str(points[-1][1])
-    keys = ["AIzaSyDL2VC7RL7sqek1eRoRO9tPFB8YJuShKLU", "AIzaSyDxROIMqdEWlKrmJ6wfWrWA6muRr6sSu7c", "AIzaSyDqLk1AvK98l-tEdQhX7vnKPR32LsfOLFk", "AIzaSyD8qhkp66UtPCIfk9fvn8rjAz4d2iGA2pE"]
+    keys = getAPIkeys()
     global key_state
     key = keys[key_state]
     key_state = (key_state + 1) % len(keys)
