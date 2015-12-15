@@ -36,3 +36,7 @@
     color: #F3F3F0;
     font-size: 30px;
 }
+
+.stationMarker {
+    opacity: 0.5;
+}

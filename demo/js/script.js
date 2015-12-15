@@ -17,6 +17,8 @@ var bikeIcon = L.AwesomeMarkers.icon({
     iconColor: 'white'
 });
 
+var stationIcon = L.AwesomeMarkers.icon({icon: 'glyphicon-log-out', prefix: 'glyphicon', markerColor: 'green', iconColor: 'white'});
+
 var time; // animation time
 var timestamp; // viz timestamp
 var timeFactor = 8; // 4 minutes = 1 second in the demo
@@ -45,22 +47,33 @@ function updateTimer() {
 
 }
 
-$.get("trips.json", function(data) {
-    $.each(data, function(i, trip) {
-        if (trip.path.length <= 1) return;
+$.get("stations.json", function(stations) {
 
-        var startPos = trip.path[0];
-        var destinations = trip.path.slice(1);
-        var duration = trip.dur * 1000 / (timeFactor * 60); // duration in millisecond
+    $.get("trips.json", function(data) {
+        $.each(data, function(i, trip) {
+            if (trip.path.length <= 1) return;
 
-        var marker = L.Marker.powerMarker(startPos, {
-            icon: bikeIcon
-        }).addCallback(L.Marker.PowerMarker.movement(destinations, duration));
-        marker.startTime = trip.sTime; // keep the information with marker
-        markers.push(marker);
+            var startPos = trip.path[0];
+            var destinations = trip.path.slice(1);
+            var duration = trip.dur * 1000 / (timeFactor * 60); // duration in millisecond
+
+            var marker = L.Marker.powerMarker(startPos, {
+                icon: bikeIcon
+            }).addCallback(L.Marker.PowerMarker.movement(destinations, duration));
+            marker.startTime = trip.sTime; // keep the information with marker
+            markers.push(marker);
+        });
+
+        time = new Date(Date.parse('2015-08-30T07:00:00'));
+        timestamp = Date.now();
+        updateTimer();
+
     });
 
-    time = new Date(Date.parse('2015-08-30T06:00:00'));
-    timestamp = Date.now();
-    updateTimer();
+    // add stations to the map: 
+    $.each(stations, function(i, station) {
+        var sMarker = L.marker([station.lat, station.long], {icon: stationIcon, opacity: 0.8}).addTo(map); 
+        sMarker.bindPopup("<b>Station: </b>" + station.name);   
+    });
 });
+
