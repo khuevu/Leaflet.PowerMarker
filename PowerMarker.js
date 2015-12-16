@@ -82,7 +82,7 @@ L.Marker.PowerMarker = L.Marker.extend({
 
         while (cur) {
             if (cur.marker.state == M.STATE_ON) {
-                var elapsedTime = timestamp - cur.marker._lastFrameTime;
+                var elapsedTime = (timestamp - cur.marker._lastFrameTime) * cur.marker._speedFactor;
                 for (var i = 0; i < cur.marker._callbacks.length; i++) {
                     var c = cur.marker._callbacks[i];
                     c.call(cur.marker, elapsedTime, timestamp);
@@ -146,11 +146,11 @@ L.Marker.PowerMarker.movement = function(points, durations) {
             runTime += elapsedTime;
             var newSeg = false;
 
-            while (runTime >= dur / this._speedFactor) {
+            while (runTime >= dur) {
                 if (index < durations.length) { // change path segment
                     startPoint = (index > 0) ? points[index - 1] : (p = this.getLatLng(), [p.lat, p.lng]);
                     endPoint = points[index];
-                    runTime -= dur / this._speedFactor;
+                    runTime -= dur;
                     dur = durations[index];
                     newSeg = true;
                     index++;
@@ -167,7 +167,7 @@ L.Marker.PowerMarker.movement = function(points, durations) {
                     destination: index - 1
                 });
             }
-            var nextPoint = interpolate(startPoint, endPoint, runTime, dur / this._speedFactor);
+            var nextPoint = interpolate(startPoint, endPoint, runTime, dur);
             this.setLatLng(nextPoint);
 
         };
