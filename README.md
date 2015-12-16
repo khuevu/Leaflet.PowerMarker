@@ -38,7 +38,7 @@ The callback function is passed two arguments:
  * `timestamp`: the timestamp when the frame starts. Thus all callbacks function
    will have the same timestamp.  
 
-### Start and stop animation
+### Animation Controls
 
     marker.start(); 
     ...
@@ -46,6 +46,20 @@ The callback function is passed two arguments:
 
 Added callbacks for the marker will be invoked continously when the browser
 paints new frame for the page until `stop()` is called. 
+
+Marker animation can also be paused and resumed: 
+
+    marker.pause(); 
+    ...
+    marker.resume(); 
+
+To speed up or slow down each marker animation, set the speed factor parameter
+with: 
+
+    marker.speed( <Float> speedfactor );
+
+For example, to double speed of the marker, use: `marker.speed(2.0)`. Set
+speed factor to 1 to reset.  
 
 ## Movement function
 

@@ -4,12 +4,14 @@ L.Marker.PowerMarker = L.Marker.extend({
         listTail: null,
         nextFrame: false,
         STATE_OFF: 0,
-        STATE_ON: 1
+        STATE_ON: 1,
+        STATE_PAUSED: 2
     },
 
     initialize: function(latlng, options) {
         L.Marker.prototype.initialize.call(this, latlng, options);
         this.state = L.Marker.PowerMarker.STATE_OFF;
+        this._speedFactor = 1; 
     },
 
     addCallback: function(callback) {
@@ -59,6 +61,19 @@ L.Marker.PowerMarker = L.Marker.extend({
         });
     },
 
+    pause: function() {
+        this.state = L.Marker.PowerMarker.STATE_PAUSED; 
+    }, 
+
+    resume: function() {
+        this.state = L.Marker.PowerMarker.STATE_ON;
+        this._lastFrameTime = Date.now(); 
+    },
+
+    speed: function(sfactor) {
+        this._speedFactor = sfactor; 
+    },
+
     _animateAndClean: function() {
         var timestamp = Date.now();
         var M = L.Marker.PowerMarker;
@@ -74,7 +89,8 @@ L.Marker.PowerMarker = L.Marker.extend({
                 }
                 cur.marker._lastFrameTime = timestamp;
                 prev = cur;
-            } else {
+
+            } else if (cur.marker.state == M.STATE_OFF) {
                 cur._callbacks = null;
                 if (prev) {
                     prev.next = cur.next;
@@ -128,14 +144,13 @@ L.Marker.PowerMarker.movement = function(points, durations) {
 
         return function(elapsedTime, timestamp) {
             runTime += elapsedTime;
-            if (runTime != runTime) console.log("elapsedTime", elapsedTime);
             var newSeg = false;
-            while (runTime >= dur) {
+
+            while (runTime >= dur / this._speedFactor) {
                 if (index < durations.length) { // change path segment
                     startPoint = (index > 0) ? points[index - 1] : (p = this.getLatLng(), [p.lat, p.lng]);
                     endPoint = points[index];
-                    runTime -= dur;
-                    if (runTime != runTime) console.log("duration ", dur);
+                    runTime -= dur / this._speedFactor;
                     dur = durations[index];
                     newSeg = true;
                     index++;
@@ -152,7 +167,7 @@ L.Marker.PowerMarker.movement = function(points, durations) {
                     destination: index - 1
                 });
             }
-            var nextPoint = interpolate(startPoint, endPoint, runTime, dur);
+            var nextPoint = interpolate(startPoint, endPoint, runTime, dur / this._speedFactor);
             this.setLatLng(nextPoint);
 
         };
